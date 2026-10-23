@@ -1,0 +1,9 @@
+{
+  "name": "mbg-adventure",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview" },
+  "dependencies": { "@tailwindcss/vite": "^4.1.14", "react": "^19.1.1", "react-dom": "^19.1.1", "react-router-dom": "^7.9.4", "three": "^0.181.1", "tailwindcss": "^4.1.14" },
+  "devDependencies": { "@vitejs/plugin-react": "^5.0.4", "vite": "^7.1.10" }
+}
