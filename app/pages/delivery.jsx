@@ -1,324 +1,162 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import Shell from "../components/shell";
 import Button from "../elements/button";
-
-const lanePositions = [28, 50, 72];
-
+import Stage from "../components/game/stage";
+const DeliveryScene = lazy(() => import("../components/game/delivery-scene"));
+import { useGameInput, holdKey } from "../components/game/input";
+import { createDrive } from "../lib/driving";
 export default function Delivery() {
   const go = useNavigate();
-  const [x, setX] = useState(50);
-  const [speed, setSpeed] = useState(0);
-  const [nitro, setNitro] = useState(100);
-  const [distance, setDistance] = useState(2.8);
-  const [roadShift, setRoadShift] = useState(0);
-  const [traffic, setTraffic] = useState([
-    { id: 1, x: 28, y: 15, icon: "🛵" },
-    { id: 2, x: 72, y: -38, icon: "🛺" },
-  ]);
-  const [event, setEvent] = useState(false);
-  const [done, setDone] = useState(false);
-  const frame = useRef();
-  const keys = useRef({});
-  const xRef = useRef(x);
-  const speedRef = useRef(speed);
-  const nitroRef = useRef(nitro);
-  const hitAt = useRef(0);
-
+  const keys = useGameInput();
+  const simulation = useRef(null);
+  if (!simulation.current) simulation.current = createDrive();
+  const [hud, setHud] = useState(() => createDrive());
+  const [paused, setPaused] = useState(false);
   useEffect(() => {
-    xRef.current = x;
-  }, [x]);
-
-  useEffect(() => {
-    speedRef.current = speed;
-  }, [speed]);
-
-  useEffect(() => {
-    nitroRef.current = nitro;
-  }, [nitro]);
-
-  useEffect(() => {
-    const down = (e) => {
-      const key = e.key.toLowerCase();
-      if (
-        [
-          "arrowup",
-          "arrowdown",
-          "arrowleft",
-          "arrowright",
-          "w",
-          "a",
-          "s",
-          "d",
-          " ",
-        ].includes(key)
-      )
-        e.preventDefault();
-      keys.current[key] = true;
-    };
-    const up = (e) => {
-      keys.current[e.key.toLowerCase()] = false;
-    };
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    let last = performance.now();
-    const tick = (now) => {
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-      if (!event && !done) {
-        const boost = keys.current[" "] && nitroRef.current > 0;
-        if (keys.current.arrowup || keys.current.w) {
-          setSpeed((v) =>
-            Math.min(boost ? 125 : 100, v + dt * (boost ? 52 : 32)),
-          );
-          setDistance((d) =>
-            Math.max(
-              0,
-              d - dt * (0.012 + (boost ? 0.05 : speedRef.current * 0.00055)),
-            ),
-          );
-        } else if (keys.current.arrowdown || keys.current.s) {
-          setSpeed((v) => Math.max(0, v - dt * 35));
-        } else {
-          setSpeed((v) => Math.max(0, v - dt * 15));
-        }
-        if (boost) setNitro((v) => Math.max(0, v - dt * 22));
-        else setNitro((v) => Math.min(100, v + dt * 3));
-        if (keys.current.arrowleft || keys.current.a)
-          setX((v) => Math.max(22, v - dt * 31));
-        if (keys.current.arrowright || keys.current.d)
-          setX((v) => Math.min(78, v + dt * 31));
-
-        setRoadShift((v) => (v + dt * (4 + speedRef.current * 0.11)) % 100);
-        setTraffic((cars) =>
-          cars.map((car) => {
-            const nextY = car.y + dt * (18 + speedRef.current * 0.42);
-            const hit =
-              Math.abs(car.x - xRef.current) < 11 && nextY > 67 && nextY < 88;
-            if (hit && now - hitAt.current > 900) {
-              hitAt.current = now;
-              setSpeed((v) => Math.max(8, v - 24));
-            }
-            if (nextY > 110) {
-              return {
-                ...car,
-                x: lanePositions[
-                  Math.floor(Math.random() * lanePositions.length)
-                ],
-                y: -18 - Math.random() * 30,
-                icon: Math.random() > 0.5 ? "🛵" : "🛺",
-              };
-            }
-            return { ...car, y: nextY };
-          }),
-        );
-      }
-      frame.current = requestAnimationFrame(tick);
-    };
-    frame.current = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(frame.current);
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-    };
-  }, [event, done]);
-
-  useEffect(() => {
-    if (distance <= 1.65 && !event) setEvent(true);
-    if (distance <= 0 && !done) {
-      setDone(true);
-      go("/results?late=1");
-    }
-  }, [distance, event, done, go]);
-
+    if (hud.done) go(hud.elapsed > 100 ? "/results?late=1" : "/results");
+  }, [hud.done, hud.elapsed, go]);
+  const remaining = Math.max(0, 100 - Math.floor(hud.elapsed));
   return (
-    <Shell phase="DELIVERY · ROUTE 03" step={4}>
-      <div className="game-heading delivery-heading">
+    <Shell phase="DELIVERY · SCHOOL RUN" step={4}>
+      <div className="game-heading">
         <div>
-          <span className="eyebrow">PHASE 03 / 03</span>
+          <span className="eyebrow">03 / 03 · THE SCHOOL RUN</span>
           <h1>
-            On the road. <em>On paper.</em>
+            Precious cargo. <em>Little van.</em>
           </h1>
         </div>
         <div className="hud-chip">
-          <span>TIME LEFT</span>
-          <b>08:42</b>
+          <span>DELIVERY WINDOW</span>
+          <b>
+            {Math.floor(remaining / 60)}:
+            {String(remaining % 60).padStart(2, "0")}
+          </b>
         </div>
       </div>
-      <section className="drive-layout">
-        <div className="drive-scene">
-          <div className="drive-sky">
-            <span className="cloud cloud-a" />
-            <span className="cloud cloud-b" />
-            <span className="sun" />
-          </div>
-          <div className="town town-back">
-            <i />
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-          <div className="roadside">
+      <section className="modern-game-layout">
+        <div className="scene-card road-scene-card">
+          <div className="scene-topline">
             <span>
-              WARUNG
-              <br />
-              <b>BU SARI</b>
+              <i className="live-dot" /> MERDEKA DISTRICT
             </span>
-            <i>🌴</i>
-            <i>🌳</i>
+            <button onClick={() => setPaused((v) => !v)}>
+              {paused ? "Resume" : "Pause"} {paused ? "▶" : "Ⅱ"}
+            </button>
           </div>
-          <div className="road">
-            <div className="road-edge" />
-            <div
-              className="road-stripe stripe-a"
-              style={{ transform: `translateY(${roadShift}%)` }}
+          <Stage label="Top-down driving game. Avoid traffic while delivering meals to school.">
+            <DeliveryScene
+              simulation={simulation}
+              keys={keys}
+              paused={paused}
+              onUpdate={setHud}
             />
-            <div
-              className="road-stripe stripe-b"
-              style={{ transform: `translateY(${roadShift}%)` }}
-            />
-            <div
-              className="road-stripe stripe-c"
-              style={{ transform: `translateY(${roadShift}%)` }}
-            />
-            <div className="road-lane" />
-            <div className="road-edge right" />
-            {traffic.map((car) => (
-              <div
-                className="traffic-car"
-                key={car.id}
-                style={{ left: `${car.x}%`, top: `${car.y}%` }}
-              >
-                {car.icon}
-              </div>
-            ))}
-          </div>
-          <div
-            className={`drive-car ${speed > 55 ? "is-racing" : ""}`}
-            style={{
-              left: `${x}%`,
-              transform: `translateX(-50%) translateY(${speed > 5 ? Math.sin(Date.now() / 80) * 2 : 0}px)`,
-            }}
-          >
-            <img src="/models/delivery-racer.png" alt="Food delivery racer" />
-            <span className="car-speed-lines" />
-          </div>
-          <div className="drive-hud">
+          </Stage>
+          <div className="race-overlay">
             <div>
-              <span>DESTINATION</span>
-              <b>SD MERDEKA</b>
-            </div>
-            <div>
-              <span>SPEED</span>
+              <small>SPEED</small>
               <b>
-                {Math.round(speed)} <small>KM/H</small>
+                {Math.round(hud.speed)}
+                <small> KM/H</small>
               </b>
             </div>
             <div>
-              <span>DISTANCE</span>
+              <small>TO SCHOOL</small>
               <b>
-                {distance.toFixed(1)} <small>KM</small>
+                {hud.distance.toFixed(2)}
+                <small> KM</small>
               </b>
             </div>
-            <div>
-              <span>NITRO</span>
-              <b>{Math.round(nitro)}%</b>
-            </div>
           </div>
-          {!event && (
-            <div className="gps-tip">
-              ↑&nbsp; HOLD TO DRIVE &nbsp; · &nbsp; A/D TO STEER &nbsp; · &nbsp;
-              SPACE NITRO
-            </div>
-          )}
-          {event && (
-            <div className="obstacle">
-              <span className="obstacle-tag">UNSCHEDULED TREE MEETING</span>
-              <div className="tree-emoji">🌳</div>
-              <h2>ROAD UPDATE</h2>
+          {(hud.event || paused) && (
+            <div className="game-modal">
+              <span className="eyebrow">
+                {hud.event ? "A LITTLE DETOUR" : "TAKE A BREATHER"}
+              </span>
+              <h2>{hud.event ? "Tree in the road." : "Shift paused."}</h2>
               <p>
-                Tree: <b>1</b>
-                <br />
-                Your delivery racer: <b>0</b>
+                {hud.event
+                  ? "The side street is clear. Take the detour and keep those lunches moving."
+                  : "Your lunches can wait a moment."}
               </p>
               <Button
                 variant="dark"
                 onClick={() => {
-                  setDistance((d) => Math.max(0.2, d - 0.1));
-                  setEvent(false);
+                  if (hud.event) {
+                    simulation.current.event = false;
+                    simulation.current.elapsed += 5;
+                    setHud({ ...simulation.current });
+                  }
+                  setPaused(false);
                 }}
               >
-                Take the tiny detour <span>↗</span>
+                {hud.event ? "Take detour · +5 sec" : "Back to the road"} →
               </Button>
             </div>
           )}
+          <div className="driving-buttons">
+            {[
+              ["a", "←", "Steer left"],
+              ["w", "↑", "Accelerate"],
+              ["s", "↓", "Brake"],
+              ["d", "→", "Steer right"],
+              [" ", "BOOST", "Boost"],
+            ].map(([key, label, title]) => (
+              <button key={key} aria-label={title} {...holdKey(keys, key)}>
+                {label}
+                <small>{title}</small>
+              </button>
+            ))}
+          </div>
+          <div className="scene-bottomline">
+            WASD / ARROWS · SPACE TO BOOST · HOLD BUTTONS ON TOUCH
+          </div>
         </div>
-        <aside className="route-card">
-          <div className="route-top">
-            <span className="eyebrow">RACE STATUS</span>
-            <span className="live">
-              <i /> LIVE
-            </span>
-          </div>
-          <div className="route-destination">
-            <span className="pin">⌖</span>
+        <aside className="task-card modern-task">
+          <span className="eyebrow">NEXT STOP</span>
+          <h2>SD Merdeka.</h2>
+          <p>
+            One hundred lunches, one school waiting. Steer around traffic and
+            use your boost on the open stretches.
+          </p>
+          <div className="delivery-metrics">
             <div>
-              <small>DELIVERING TO</small>
-              <b>SD Merdeka</b>
+              <span>ROUTE COMPLETE</span>
+              <b>{Math.round(((2.8 - hud.distance) / 2.8) * 100)}%</b>
             </div>
-          </div>
-          <div className="route-progress">
-            <div className="route-line">
+            <div className="mini-progress">
               <span
-                style={{
-                  height: `${Math.max(12, ((2.8 - distance) / 2.8) * 100)}%`,
-                }}
+                style={{ width: `${((2.8 - hud.distance) / 2.8) * 100}%` }}
               />
             </div>
-            <div className="route-marks">
-              <span>
-                <b>KITCHEN</b>
-                <small>08:11</small>
-              </span>
-              <span>
-                <b>YOU ARE HERE</b>
-                <small>{distance.toFixed(1)} KM LEFT</small>
-              </span>
-              <span>
-                <b>SCHOOL</b>
-                <small>BY 10:30</small>
-              </span>
-            </div>
-          </div>
-          <div className="vehicle-status">
             <div>
-              <span>VEHICLE</span>
-              <b>{speed > 65 ? "NITRO ENGAGED" : "ALL SYSTEMS MOSTLY GO"}</b>
+              <span>BOOST RESERVE</span>
+              <b>{Math.round(hud.nitro)}%</b>
             </div>
-            <div className="vehicle-bar">
-              <i style={{ width: `${Math.max(18, nitro)}%` }} />
+            <div className="mini-progress boost-progress">
+              <span style={{ width: `${hud.nitro}%` }} />
             </div>
-          </div>
-          <div className="route-controls">
-            <span>CONTROLS</span>
             <div>
-              <kbd>↑</kbd>
-              <kbd>←</kbd>
-              <kbd>↓</kbd>
-              <kbd>→</kbd>
-              <small>WASD + SPACE</small>
+              <span>TRAFFIC BUMPS</span>
+              <b>{hud.hits}</b>
             </div>
           </div>
-          <button className="arrive-button" onClick={() => go("/results")}>
-            Arrive at school <span>↗</span>
-          </button>
+          <p className="game-notice" role="status">
+            {hud.event
+              ? "Route blocked. Choose the detour to continue."
+              : hud.cooldown > 0
+                ? "Bump! You lost speed. Keep an eye on traffic."
+                : hud.boost
+                  ? "Boost engaged. Keep your lane clear."
+                  : hud.speed < 1
+                    ? "Hold ↑ or W to start your delivery."
+                    : "Looking good. Keep those meals moving."}
+          </p>
+          <div className="task-foot">
+            ARRIVAL HAPPENS AT THE END OF THE ROUTE.
+          </div>
         </aside>
       </section>
-      <div className="stage-note">
-        <span>THE SHORTEST ROUTE IS A MATTER OF OPINION.</span>
-        <span>DRIVE CAREFULLY · FOOD FIRST</span>
-      </div>
     </Shell>
   );
 }

@@ -7,7 +7,13 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import "@fontsource/nunito/latin-800.css";
+import "@fontsource/nunito/latin-900.css";
+import "@fontsource/nunito-sans/latin-500.css";
+import "@fontsource/nunito-sans/latin-700.css";
 import "./styles/app.css";
+import { brandStyles } from "./configs/brand";
+import { icons } from "./configs/images";
 
 export function meta() {
   return [
@@ -17,16 +23,17 @@ export function meta() {
       content:
         "One school. One hundred meals. A charmingly complicated lunch delivery adventure.",
     },
-    { name: "theme-color", content: "#ebf5ff" },
+    { name: "theme-color", content: "#ffffff" },
   ];
 }
 
 export function Layout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" style={brandStyles}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href={icons.brand} />
         <Meta />
         <Links />
       </head>

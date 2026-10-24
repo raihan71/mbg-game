@@ -11,8 +11,11 @@
     "format": "prettier --write app vite.config.js react-router.config.js"
   },
   "dependencies": {
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/nunito-sans": "^5.3.0",
     "@react-router/node": "^7.18.4",
     "@react-router/serve": "^7.18.4",
+    "@react-three/fiber": "^9.8.2",
     "@tailwindcss/vite": "^4.1.14",
     "isbot": "^5.2.2",
     "react": "^19.1.1",

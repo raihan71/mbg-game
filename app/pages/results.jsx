@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router";
 import { readBest, readSafety } from "../lib/storage";
 import Shell from "../components/shell";
 import Button from "../elements/button";
+import ModelImage from "../components/model-image";
+import { images } from "../configs/images";
 
 export default function Results() {
   const go = useNavigate();
@@ -25,6 +27,7 @@ export default function Results() {
   return (
     <Shell phase="DAILY DEBRIEF" step={5}>
       <section className="results-hero">
+        <ModelImage asset={images.chefHappy} className="result-mascot" />
         <span className="eyebrow">DAY COMPLETE · SD MERDEKA</span>
         <h1>
           {late ? (

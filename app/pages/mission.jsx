@@ -2,6 +2,8 @@ import { useNavigate } from "react-router";
 import { mission } from "../lib/mission";
 import Shell from "../components/shell";
 import Button from "../elements/button";
+import ModelImage from "../components/model-image";
+import { images, mealImages } from "../configs/images";
 
 export default function Mission() {
   const go = useNavigate();
@@ -42,7 +44,7 @@ export default function Mission() {
               <span className="eyebrow">DESTINATION</span>
               <h2>{mission.school}</h2>
             </div>
-            <div className="school-icon">⌂</div>
+            <ModelImage asset={images.chefHappy} className="mission-mascot" />
           </div>
           <div className="mission-stats">
             <div>
@@ -61,7 +63,7 @@ export default function Mission() {
             <div className="menu-items">
               {mission.menu.map((item, i) => (
                 <span key={item}>
-                  <i className={`menu-dot dot-${i}`} />
+                  <ModelImage asset={mealImages[i].image} decorative />
                   {item}
                 </span>
               ))}

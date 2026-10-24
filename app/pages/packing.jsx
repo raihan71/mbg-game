@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { lazy, useState } from "react";
 import { useNavigate } from "react-router";
 import Shell from "../components/shell";
 import Button from "../elements/button";
+import ModelImage from "../components/model-image";
+import { mealImages } from "../configs/images";
+import Stage from "../components/game/stage";
+const PackingScene = lazy(() => import("../components/game/packing-scene"));
 
 export default function Packing() {
   const go = useNavigate();
   const [checked, setChecked] = useState({});
-  const items = ["Rice", "Chicken", "Greens", "Banana"];
-  const count = Object.values(checked).filter(Boolean).length;
+  const items = mealImages.map((item) => item.name);
+  const count = items.filter((item) => checked[item]).length;
   return (
     <Shell phase="PACKING · PORTION CHECK" step={3}>
       <div className="game-heading">
         <div>
-          <span className="eyebrow">PHASE 02 / 02</span>
+          <span className="eyebrow">PHASE 02 / 03</span>
           <h1>
             Every box, <em>complete.</em>
           </h1>
@@ -25,43 +29,38 @@ export default function Packing() {
           </b>
         </div>
       </div>
-      <section className="packing-layout">
-        <div className="packing-board">
-          <div className="board-head">
-            <span className="eyebrow">THE CONVEYOR OF DESTINY</span>
-            <span>MENU CARD № 001</span>
+      <section className="modern-game-layout">
+        <div className="scene-card">
+          <div className="scene-topline">
+            <span>
+              <i className="live-dot" /> THE PACKING LINE
+            </span>
+            <b>MEAL KIT · 001</b>
           </div>
-          <div className="lunchbox">
-            <div className="lunchbox-brand">
-              MBG <small>MEAL KIT</small>
-            </div>
+          <Stage label="Animated lunch tray with rice, chicken, greens and banana">
+            <PackingScene
+              checked={checked}
+              onToggle={(item) =>
+                setChecked((s) => ({ ...s, [item]: !s[item] }))
+              }
+            />
+          </Stage>
+          <div className="station-buttons">
             {items.map((item, i) => (
               <button
-                className={`food-slot slot-${i} ${checked[item] ? "is-added" : ""}`}
                 key={item}
+                aria-pressed={!!checked[item]}
+                className={checked[item] ? "complete" : ""}
                 onClick={() => setChecked((s) => ({ ...s, [item]: !s[item] }))}
               >
-                <span className="food-emoji">
-                  {["🍚", "🍗", "🥬", "🍌"][i]}
-                </span>
-                <span>{item}</span>
+                <small>0{i + 1}</small>
+                {item}
                 <b>{checked[item] ? "✓" : "+"}</b>
               </button>
             ))}
           </div>
-          <div className="conveyor">
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
-          <div className="board-foot">
-            <span>ONE BOX AT A TIME. THE FORMS CAN WAIT.</span>
-            <span>100 PORTIONS</span>
+          <div className="scene-bottomline">
+            TAP AN INGREDIENT · BUILD A BALANCED LUNCH
           </div>
         </div>
         <div className="task-card packing-task">
@@ -88,6 +87,11 @@ export default function Packing() {
                 <span className="check-icon">
                   {checked[item] ? "✓" : String(i + 1).padStart(2, "0")}
                 </span>
+                <ModelImage
+                  asset={mealImages[i].image}
+                  decorative
+                  className="check-food"
+                />
                 <span>{item}</span>
                 <small>{checked[item] ? "ADDED" : "TAP TO ADD"}</small>
               </button>

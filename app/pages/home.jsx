@@ -1,113 +1,104 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import Art from "../components/art";
+import ModelImage from "../components/model-image";
+import { images } from "../configs/images";
 import { readBest } from "../lib/storage";
 import Shell from "../components/shell";
 import Button from "../elements/button";
-
 export default function Home() {
   const go = useNavigate();
-  const [help, setHelp] = useState(false);
   const [best, setBest] = useState(0);
   useEffect(() => {
     setBest(readBest());
   }, []);
   return (
-    <Shell onHelp={() => setHelp(!help)}>
+    <Shell>
       <section className="hero">
         <div className="hero-copy">
-          <span className="eyebrow">
-            <i /> YOUR VERY NORMAL LUNCH RUN
-          </span>
+          <span className="eyebrow">A LITTLE CARE. A LOT OF LUNCH.</span>
           <h1>
-            A little
+            Little lunches.
             <br />
-            lunch <em>chaos.</em>
+            <em>Big adventures.</em>
           </h1>
           <p className="hero-sub">
-            One school. One hundred meals. A clipboard with too much authority.
+            Cook with care. Pack a little happiness. Get one hundred warm
+            lunches to school in your very own lunch adventure.
           </p>
           <div className="hero-actions">
-            <Button variant="dark" onClick={() => go("/mission")}>
-              Start the day <span>↗</span>
+            <Button onClick={() => go("/mission")}>
+              Let’s get cooking <span>→</span>
             </Button>
-            <Button variant="quiet" onClick={() => setHelp(!help)}>
-              How to play <span>↓</span>
+            <Button
+              variant="quiet"
+              onClick={() =>
+                document
+                  .getElementById("how-it-works")
+                  .scrollIntoView({ behavior: "smooth" })
+              }
+            >
+              How it works <span>↓</span>
             </Button>
           </div>
           <div className="hero-foot">
-            <span>
-              <i className="dot dot-green" /> SINGLE DAY SIMULATION
-            </span>
-            <span>NO BACKEND REQUIRED</span>
+            <span>3 little challenges</span>
+            <span>100 happy lunches</span>
           </div>
         </div>
-        <div className="hero-art-wrap">
-          <div className="art-caption">
-            TODAY'S LUNCH
-            <br />
-            <b>Made with care.</b>
-          </div>
-          <Art />
-          <span className="orbit orbit-one">
-            100
-            <br />
-            <small>PORTIONS</small>
-          </span>
-          <span className="orbit orbit-two">
-            FRESH
-            <br />
-            <small>ISH.</small>
-          </span>
-          <div className="art-note">
-            A charmingly complicated
-            <br />
-            delivery operation <span>↙</span>
-          </div>
-        </div>
+        <Art />
       </section>
-      {help && (
-        <div className="help-panel">
-          <button className="close-help" onClick={() => setHelp(false)}>
-            ×
-          </button>
-          <span className="eyebrow">FIELD GUIDE</span>
+      <div className="chapter-strip" aria-label="Your adventure">
+        <span>
+          <b>01</b> Cook with care
+        </span>
+        <span>
+          <b>02</b> Pack it right
+        </span>
+        <span>
+          <b>03</b> Deliver a smile
+        </span>
+      </div>
+      <section className="story-section" id="how-it-works">
+        <ModelImage asset={images.chefPlate} className="story-illustration" />
+        <div>
+          <span className="eyebrow">SMALL STEPS. REAL GOOD.</span>
           <h2>
-            Everything is going
+            A good lunch
             <br />
-            according to <em>some plan.</em>
+            starts with you.
           </h2>
           <p>
-            Inspect the ingredients, cook inside the green zone, pack a complete
-            meal, then steer the little van to school. Use WASD or your arrow
-            keys to drive. The score rewards safe food first.
-          </p>
-          <div className="help-tags">
-            <span>↑↓ accelerate / brake</span>
-            <span>←→ steer</span>
-            <span>SPACE use handbrake</span>
-          </div>
-        </div>
-      )}
-      <section className="home-lower">
-        <div className="lower-left">
-          <span className="eyebrow">PERSONAL BEST</span>
-          <strong>{best ? best.toLocaleString("en-US") : "— — —"}</strong>
-          <span>
-            {best
-              ? "A small win for the whole operation."
-              : "Your clipboard is currently blank."}
-          </span>
-        </div>
-        <div className="lower-right">
-          <span className="eyebrow">THE BRIEF</span>
-          <p>
-            Get a warm, complete lunch to <b>SD Merdeka</b> before the paperwork
-            develops its own paperwork.
+            Meet your chef, check the ingredients, and bring a balanced meal
+            together. Every safe choice makes a difference.
           </p>
           <button className="text-link" onClick={() => go("/mission")}>
-            Read today’s mission <span>→</span>
+            Meet today’s mission <span>→</span>
           </button>
+        </div>
+      </section>
+      <section className="story-section story-reverse">
+        <ModelImage
+          asset={images.mealTray}
+          className="story-illustration meal-illustration"
+        />
+        <div>
+          <span className="eyebrow">ONE SCHOOL. ONE TEAM.</span>
+          <h2>
+            Ready. Set.
+            <br />
+            Lunch!
+          </h2>
+          <p>
+            SD Merdeka is waiting. Fill each tray, hop in your van, and find
+            your way through a wonderfully busy neighborhood.
+          </p>
+          <div className="personal-best">
+            <span>YOUR PERSONAL BEST</span>
+            <strong>
+              {best ? best.toLocaleString("en-US") : "Your story starts here."}
+            </strong>
+          </div>
         </div>
       </section>
     </Shell>
