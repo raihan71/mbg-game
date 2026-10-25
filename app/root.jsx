@@ -12,6 +12,7 @@ import "@fontsource/nunito/latin-900.css";
 import "@fontsource/nunito-sans/latin-500.css";
 import "@fontsource/nunito-sans/latin-700.css";
 import "./styles/app.css";
+import GameProvider from "./components/game-provider";
 import { brandStyles } from "./configs/brand";
 import { icons } from "./configs/images";
 
@@ -47,7 +48,11 @@ export function Layout({ children }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <GameProvider>
+      <Outlet />
+    </GameProvider>
+  );
 }
 
 export function ErrorBoundary({ error }) {

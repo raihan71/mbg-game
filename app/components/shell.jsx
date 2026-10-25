@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import { useGame } from "./game-provider";
 export default function Shell({ children, phase, step }) {
+  const { game, muted, toggleSound, saveStatus, offline } = useGame();
   const [help, setHelp] = useState(false);
   return (
     <main className="app-shell">
@@ -12,7 +14,16 @@ export default function Shell({ children, phase, step }) {
           </span>
         </Link>
         <div className="top-meta">
-          <span className="day-pill">DAY 01</span>
+          <span className="day-pill">
+            DAY {String(game.day || 1).padStart(2, "0")}
+          </span>
+          <button
+            className="help-button"
+            onClick={toggleSound}
+            aria-pressed={!muted}
+          >
+            {muted ? "Sound off" : "Sound on"}
+          </button>
           <button
             className="help-button"
             onClick={() => setHelp((v) => !v)}
@@ -35,9 +46,11 @@ export default function Shell({ children, phase, step }) {
           <span className="eyebrow">YOUR LITTLE FIELD GUIDE</span>
           <h2>You’ve got this, chef.</h2>
           <p>
-            Inspect the ingredients, finish each cooking station, and pack one
-            of every food. Then hold W or ↑ to drive, A/D or ←/→ to steer, and
-            Space to boost. On your phone, use the buttons below the game.
+            Spin a menu, pick its pictured ingredients, and finish each cooking
+            station. Pack the cooked dish and extras in the exact order on your
+            ticket. Spin a country to begin delivery. Then hold W or ↑ to drive,
+            A/D or ←/→ to steer, and Space to boost. On your phone, use the
+            buttons below the game.
           </p>
         </section>
       )}
@@ -59,6 +72,10 @@ export default function Shell({ children, phase, step }) {
           </div>
         </div>
       )}
+      <div className="save-strip">
+        <span>{saveStatus}</span>
+        <span>{offline}</span>
+      </div>
       {children}
       <footer className="footer">
         <div>
@@ -71,7 +88,9 @@ export default function Shell({ children, phase, step }) {
         <nav aria-label="Footer">
           <Link to="/">Back to base</Link>
           <Link to="/mission">Start an adventure</Link>
-          <span>MBG ADVENTURE · DAY 01</span>
+          <span>
+            MBG ADVENTURE · DAY {String(game.day || 1).padStart(2, "0")}
+          </span>
         </nav>
       </footer>
     </main>

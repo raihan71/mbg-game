@@ -1,7 +1,7 @@
 export default {
-  appDirectory: 'app',
+  appDirectory: "app",
   ssr: true,
   routeDiscovery: {
-    mode: 'lazy',
+    mode: "initial",
   },
 };

@@ -70,3 +70,41 @@ test("travel is consistent across frame rates and large deltas are clamped", () 
   stepDrive(s, { w: true }, 10);
   assert.equal(s.elapsed, 0.05);
 });
+
+test("delivery includes ambulance, bus and motorcycle with size-aware collisions", () => {
+  const s = createDrive();
+  assert.equal(s.traffic.length, 5);
+  const bus = s.traffic[1];
+  const ambulance = s.traffic[3];
+  const bike = s.traffic[4];
+  assert.ok(bus.collisionY > ambulance.collisionY);
+  assert.ok(ambulance.collisionX > bike.collisionX);
+  function passVehicle(vehicle, x = 0.95) {
+    const drive = createDrive();
+    drive.speed = 80;
+    drive.traffic = [{ ...vehicle, x, y: -2.8 }];
+    stepDrive(drive, { w: true }, 0.016);
+    return drive.hits;
+  }
+  assert.equal(passVehicle(bus), 1);
+  assert.equal(passVehicle(ambulance), 1);
+  assert.equal(passVehicle(bike), 0);
+  assert.equal(passVehicle(bike, 0), 1);
+});
+
+test("all traffic obstacles respawn on road and retain their collision sizes", () => {
+  const s = createDrive();
+  s.traffic.forEach((car) => {
+    car.y = -8;
+  });
+  const bounds = s.traffic.map(({ collisionX, collisionY }) => [
+    collisionX,
+    collisionY,
+  ]);
+  stepDrive(s, {}, 0.016, () => 0.5);
+  s.traffic.forEach((car, index) => {
+    assert.equal(car.x, 0);
+    assert.equal(car.y, 11.5);
+    assert.deepEqual([car.collisionX, car.collisionY], bounds[index]);
+  });
+});

@@ -3,11 +3,15 @@ import { useNavigate } from "react-router";
 import Art from "../components/art";
 import ModelImage from "../components/model-image";
 import { images } from "../configs/images";
+import { useGame } from "../components/game-provider";
+import { runPath } from "../lib/game";
 import { readBest } from "../lib/storage";
 import Shell from "../components/shell";
 import Button from "../elements/button";
 export default function Home() {
   const go = useNavigate();
+  const { game } = useGame();
+  const active = game.run && game.run.phase !== "results";
   const [best, setBest] = useState(0);
   useEffect(() => {
     setBest(readBest());
@@ -27,8 +31,8 @@ export default function Home() {
             lunches to school in your very own lunch adventure.
           </p>
           <div className="hero-actions">
-            <Button onClick={() => go("/mission")}>
-              Let’s get cooking <span>→</span>
+            <Button onClick={() => go(active ? runPath(game.run) : "/mission")}>
+              {active ? "Resume adventure" : "Let’s get cooking"} <span>→</span>
             </Button>
             <Button
               variant="quiet"

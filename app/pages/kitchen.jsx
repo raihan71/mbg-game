@@ -1,8 +1,12 @@
-import { lazy, useRef, useState } from "react";
+import { lazy, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import Shell from "../components/shell";
 import Button from "../elements/button";
 import Stage from "../components/game/stage";
+import { useGame } from "../components/game-provider";
+import { foods, menuFor } from "../lib/game";
+import { sound } from "../lib/audio";
+import ModelImage from "../components/model-image";
 import { stations } from "../lib/kitchen";
 const KitchenScene = lazy(() => import("../components/game/kitchen-scene"));
 import { useGameInput, holdKey } from "../components/game/input";
@@ -10,8 +14,11 @@ import { useGameInput, holdKey } from "../components/game/input";
 export default function Kitchen() {
   const go = useNavigate();
   const keys = useGameInput();
-  const [stage, setStage] = useState(0);
-  const [safety, setSafety] = useState(100);
+  const { game, dispatch } = useGame();
+  const run = game.run;
+  const menu = menuFor(run);
+  const stage = run.stage;
+  const safety = Math.max(0, 100 - run.mistakes * 5);
   const [command, setCommand] = useState(null);
   const [busy, setBusy] = useState(false);
   const [atCrate, setAtCrate] = useState(false);
@@ -20,27 +27,38 @@ export default function Kitchen() {
     "Your shift starts here. Walk to the ingredient crate.",
   );
   const lock = useRef(false);
+  useEffect(() => {
+    if (!busy || stage === 0 || progress <= 0) return;
+    const cue = stage === 1 ? "chop" : stage === 2 ? "cook" : "pack";
+    sound(cue);
+    const timer = setInterval(() => sound(cue), stage === 2 ? 430 : 350);
+    return () => clearInterval(timer);
+  }, [busy, stage, progress > 0]);
   function visit(index) {
     if (lock.current || index !== stage || stage === 4) return;
     lock.current = true;
+    sound("select");
     setBusy(true);
     setProgress(0);
     setCommand({ id: stations[index].id });
     setNotice(`On your way to ${stations[index].label.toLowerCase()}.`);
   }
-  function inspect(accept) {
-    const score = accept ? 55 : 100;
-    setSafety(score);
-    setStage(1);
-    setAtCrate(false);
-    try {
-      sessionStorage.setItem("mbg-safety", String(score));
-    } catch {}
+  function chooseIngredient(id) {
+    if (run.selected.includes(id)) return;
+    const correct = menu.ingredients.includes(id);
+    dispatch({ type: "INGREDIENT", id });
+    sound(correct ? "select" : "error");
     setNotice(
-      accept
-        ? "Questionable ingredients accepted. Food safety lost 45 points."
-        : "Crate rejected. Fresh ingredients ready for prep.",
+      correct
+        ? `${foods[id].name} added. Keep following the recipe.`
+        : `${foods[id].name} is not in this recipe. Try another ingredient.`,
     );
+  }
+  function inspect() {
+    dispatch({ type: "STATION", stage: 0 });
+    setAtCrate(false);
+    sound("success");
+    setNotice("Ingredients checked. Time to chop your fresh batch.");
   }
   const titles = [
     "Check before you chop.",
@@ -59,7 +77,7 @@ export default function Kitchen() {
           </h1>
         </div>
         <div className="hud-chip">
-          <span>FOOD SAFETY</span>
+          <span>RECIPE ACCURACY</span>
           <b>{safety}%</b>
         </div>
       </div>
@@ -73,6 +91,8 @@ export default function Kitchen() {
           </div>
           <Stage label="Top-down kitchen with four workstations and a moving chef">
             <KitchenScene
+              ingredientAsset={foods[menu.ingredients[0]].image}
+              dishAsset={menu.image}
               onVisit={visit}
               keys={keys}
               command={command}
@@ -85,7 +105,7 @@ export default function Kitchen() {
                   setBusy(false);
                   lock.current = false;
                   setNotice(
-                    "The chicken expiry label is unreadable. Reject it or accept the risk.",
+                    "Choose the pictured ingredients listed on your recipe ticket.",
                   );
                 } else
                   setNotice(
@@ -93,7 +113,8 @@ export default function Kitchen() {
                   );
               }}
               onComplete={() => {
-                setStage((s) => s + 1);
+                dispatch({ type: "STATION", stage });
+                sound("select");
                 setBusy(false);
                 lock.current = false;
                 setProgress(1);
@@ -138,7 +159,7 @@ export default function Kitchen() {
           </div>
         </div>
         <aside className="task-card modern-task">
-          <span className="eyebrow">TODAY’S ORDER · 001</span>
+          <span className="eyebrow">TODAY’S ORDER · {menu.name}</span>
           <h2>{titles[stage]}</h2>
           <p>
             {
@@ -166,12 +187,33 @@ export default function Kitchen() {
             ))}
           </div>
           {atCrate ? (
-            <div className="choice-row">
-              <Button variant="dark" onClick={() => inspect(false)}>
-                Reject crate
-              </Button>
-              <Button variant="soft" onClick={() => inspect(true)}>
-                Use anyway
+            <div>
+              <p>
+                <b>Recipe:</b>{" "}
+                {menu.ingredients.map((id) => foods[id].name).join(" + ")}
+              </p>
+              <div className="ingredient-grid">
+                {Object.entries(foods).map(([id, food]) => (
+                  <button
+                    key={id}
+                    disabled={run.selected.includes(id)}
+                    className={run.selected.includes(id) ? "picked" : ""}
+                    onClick={() => chooseIngredient(id)}
+                  >
+                    <ModelImage asset={food.image} decorative />
+                    <span>
+                      {food.name} {run.selected.includes(id) ? "✓" : "+"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <Button
+                variant="dark"
+                disabled={run.selected.length !== menu.ingredients.length}
+                onClick={inspect}
+              >
+                Ingredients ready · {run.selected.length}/
+                {menu.ingredients.length} →
               </Button>
             </div>
           ) : stage < 4 ? (
@@ -189,7 +231,14 @@ export default function Kitchen() {
               <span>↗</span>
             </Button>
           ) : (
-            <Button variant="dark" onClick={() => go("/packing")}>
+            <Button
+              variant="dark"
+              onClick={() => {
+                dispatch({ type: "PACKING" });
+                sound("pack");
+                go("/packing");
+              }}
+            >
               Start packing <span>↗</span>
             </Button>
           )}

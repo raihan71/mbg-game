@@ -6,6 +6,8 @@ import Sprite from "./sprite";
 import { images } from "../../configs/images";
 import { stations } from "../../lib/kitchen";
 export default function KitchenScene({
+  ingredientAsset = images.chicken,
+  dishAsset = images.mealTray,
   keys,
   command,
   onVisit,
@@ -102,9 +104,7 @@ export default function KitchenScene({
           <Dot z={0.01} r={0.69} color="#ffffff" />
           <Food
             asset={
-              [images.chicken, images.onion, images.chefCook, images.mealTray][
-                index
-              ]
+              [ingredientAsset, images.onion, images.chefCook, dishAsset][index]
             }
             position={[0, 0, 0.1]}
             scale={0.8}

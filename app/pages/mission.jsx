@@ -1,86 +1,65 @@
 import { useNavigate } from "react-router";
-import { mission } from "../lib/mission";
 import Shell from "../components/shell";
 import Button from "../elements/button";
-import ModelImage from "../components/model-image";
-import { images, mealImages } from "../configs/images";
-
+import Roulette from "../components/game/roulette";
+import { useGame } from "../components/game-provider";
+import { menus, menuFor, runPath } from "../lib/game";
 export default function Mission() {
   const go = useNavigate();
+  const { game, dispatch, ready } = useGame();
+  const active = game.run && game.run.phase !== "results";
   return (
-    <Shell phase="MISSION BRIEFING" step={1}>
+    <Shell phase="MENU ROULETTE" step={1}>
       <section className="mission-layout">
         <div className="mission-copy">
-          <span className="eyebrow">A NOTE FROM THE OPERATIONS DESK</span>
+          <span className="eyebrow">A NEW DAY. A FRESH RECIPE.</span>
           <h1>
-            Today’s
+            What’s for
             <br />
-            <em>assignment.</em>
+            <em>lunch?</em>
           </h1>
-          <p>The morning is young. The rice cooker has made no promises.</p>
-          <Button
-            variant="dark"
-            onClick={() => {
-              try {
-                sessionStorage.setItem("mbg-safety", "100");
-              } catch {}
-              go("/kitchen");
-            }}
-          >
-            Start cooking <span>↗</span>
-          </Button>
+          <p>
+            Spin for today’s menu. Find the right ingredients, cook your dish,
+            then follow its packing ticket. A school somewhere in the world is
+            waiting!
+          </p>
+          {active && (
+            <div className="resume-card">
+              <h2>Your lunch is waiting.</h2>
+              <p>
+                {menuFor(game.run).name} · Day {game.day} · {game.run.phase}
+              </p>
+              <Button onClick={() => go(runPath(game.run))}>
+                Resume adventure →
+              </Button>
+            </div>
+          )}
           <button className="back-link" onClick={() => go("/")}>
             ← back to base
           </button>
         </div>
-        <div className="mission-card">
-          <div className="card-top">
-            <span className="day-pill">DAILY MISSION · 01</span>
-            <span className="status-dot" />{" "}
-            <span className="status-text">READY-ISH</span>
-          </div>
-          <div className="school-line">
-            <div>
-              <span className="eyebrow">DESTINATION</span>
-              <h2>{mission.school}</h2>
+        {ready &&
+          (active ? (
+            <div className="task-card">
+              <h2>Finish today’s adventure.</h2>
+              <p>
+                Your menu and packing instructions are saved. Complete this
+                delivery to unlock the next roulette.
+              </p>
+              <Button onClick={() => go(runPath(game.run))}>
+                Continue {game.run.phase} →
+              </Button>
             </div>
-            <ModelImage asset={images.chefHappy} className="mission-mascot" />
-          </div>
-          <div className="mission-stats">
-            <div>
-              <span>MEALS REQUIRED</span>
-              <strong>100</strong>
-            </div>
-            <div>
-              <span>DEADLINE</span>
-              <strong>
-                10:30 <small>AM</small>
-              </strong>
-            </div>
-          </div>
-          <div className="menu-block">
-            <span className="eyebrow">TODAY’S MENU</span>
-            <div className="menu-items">
-              {mission.menu.map((item, i) => (
-                <span key={item}>
-                  <ModelImage asset={mealImages[i].image} decorative />
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="weather-row">
-            <span>☼ &nbsp;{mission.weather}</span>
-            <span>
-              DIFFICULTY &nbsp;<b>NORMAL-ISH</b>
-            </span>
-          </div>
-          <div className="mission-stamp">
-            APPROVED
-            <br />
-            <b>PROBABLY</b>
-          </div>
-        </div>
+          ) : (
+            <Roulette
+              items={menus}
+              title="TODAY’S MENU ROULETTE"
+              onPick={(menu) => {
+                dispatch({ type: "NEW", menuId: menu.id });
+                go("/kitchen");
+              }}
+            />
+          ))}
       </section>
     </Shell>
   );

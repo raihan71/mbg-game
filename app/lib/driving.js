@@ -1,3 +1,5 @@
+import { trafficVehicles } from "../configs/images.js";
+
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export function createDrive() {
   return {
@@ -13,11 +15,17 @@ export function createDrive() {
     event: false,
     done: false,
     boost: false,
-    traffic: [
-      { x: -2.4, y: 6 },
-      { x: 2.4, y: 12 },
-      { x: 0, y: 19 },
-    ],
+    traffic: trafficVehicles.map((asset, index) => {
+      const height = asset.height ?? 2.1;
+      const width = (height * asset.region[2]) / asset.region[3];
+      return {
+        x: [-2.4, 2.4, 0][index % 3],
+        y: 6 + index * 7,
+        // Slightly inset bounds keep transparent sprite edges forgiving.
+        collisionX: width / 2 + 0.48,
+        collisionY: height / 2 + 0.6,
+      };
+    }),
   };
 }
 export function stepDrive(s, keys, delta, random = Math.random) {
@@ -50,8 +58,8 @@ export function stepDrive(s, keys, delta, random = Math.random) {
   for (const car of s.traffic) {
     car.y -= s.speed * dt * 0.075;
     if (
-      Math.abs(car.x - s.x) < 1.05 &&
-      Math.abs(car.y + 2.8) < 1.65 &&
+      Math.abs(car.x - s.x) < (car.collisionX ?? 1.05) &&
+      Math.abs(car.y + 2.8) < (car.collisionY ?? 1.65) &&
       s.cooldown === 0 &&
       s.speed > 0
     ) {

@@ -71,7 +71,7 @@ export default function DeliveryScene({ simulation, keys, paused, onUpdate }) {
           </group>
         ))}
       </group>
-      {[0, 1, 2].map((i) => (
+      {trafficVehicles.map((asset, i) => (
         <group
           ref={(node) => {
             cars.current[i] = node;
@@ -79,9 +79,9 @@ export default function DeliveryScene({ simulation, keys, paused, onUpdate }) {
           key={i}
         >
           <Sprite
-            asset={trafficVehicles[i]}
-            height={2.1}
-            rotation={[0, 0, Math.PI]}
+            asset={asset}
+            height={asset.height ?? 2.1}
+            rotation={[0, 0, asset.rotation ?? Math.PI]}
           />
         </group>
       ))}

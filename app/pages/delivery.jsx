@@ -5,17 +5,91 @@ import Button from "../elements/button";
 import Stage from "../components/game/stage";
 const DeliveryScene = lazy(() => import("../components/game/delivery-scene"));
 import { useGameInput, holdKey } from "../components/game/input";
+import { useGame } from "../components/game-provider";
+import Roulette from "../components/game/roulette";
+import { countries, countryFor } from "../lib/game";
+import { sound } from "../lib/audio";
 import { createDrive } from "../lib/driving";
 export default function Delivery() {
   const go = useNavigate();
   const keys = useGameInput();
+  const { game, dispatch } = useGame();
+  const run = game.run;
+  const country = countryFor(run);
   const simulation = useRef(null);
-  if (!simulation.current) simulation.current = createDrive();
-  const [hud, setHud] = useState(() => createDrive());
-  const [paused, setPaused] = useState(false);
+  if (!simulation.current)
+    simulation.current = run.drive ? structuredClone(run.drive) : createDrive();
+  const [hud, setHud] = useState(() => ({ ...simulation.current }));
+  const [paused, setPaused] = useState(!!run.drive);
+  const lastSave = useRef(hud.elapsed);
+  const lastCue = useRef({ hits: hud.hits, boost: false, event: false });
+  const dispatchRef = useRef(dispatch);
+  dispatchRef.current = dispatch;
   useEffect(() => {
-    if (hud.done) go(hud.elapsed > 100 ? "/results?late=1" : "/results");
-  }, [hud.done, hud.elapsed, go]);
+    if (!country) return;
+    const save = () =>
+      dispatchRef.current({ type: "DRIVE", drive: simulation.current });
+    const hide = () => {
+      if (document.hidden) {
+        setPaused(true);
+        save();
+      }
+    };
+    window.addEventListener("pagehide", save);
+    document.addEventListener("visibilitychange", hide);
+    return () => {
+      save();
+      window.removeEventListener("pagehide", save);
+      document.removeEventListener("visibilitychange", hide);
+    };
+  }, [country]);
+  function update(next) {
+    setHud(next);
+    if (next.hits > lastCue.current.hits) sound("bump");
+    if (next.boost && !lastCue.current.boost) sound("boost");
+    if (next.event && !lastCue.current.event) sound("error");
+    lastCue.current = { hits: next.hits, boost: next.boost, event: next.event };
+    if (next.done || next.elapsed - lastSave.current >= 1) {
+      lastSave.current = next.elapsed;
+      dispatch({ type: "DRIVE", drive: next });
+      if (next.done) {
+        sound("success");
+        go("/results");
+      }
+    }
+  }
+  useEffect(() => {
+    if (!country || paused || hud.speed < 1 || hud.event || hud.done) return;
+    const timer = setInterval(() => sound("engine"), 450);
+    return () => clearInterval(timer);
+  }, [country, paused, hud.speed > 0, hud.event, hud.done]);
+  if (!country)
+    return (
+      <Shell phase="DESTINATION ROULETTE" step={4}>
+        <section className="mission-layout">
+          <div className="mission-copy">
+            <span className="eyebrow">LUNCH IS READY TO TRAVEL</span>
+            <h1>
+              Where to,
+              <br />
+              <em>little van?</em>
+            </h1>
+            <p>
+              Spin to choose a country. Your van will make the final school run
+              in the selected city.
+            </p>
+          </div>
+          <Roulette
+            items={countries}
+            title="SCHOOL DELIVERY ROULETTE"
+            onPick={(item) => {
+              dispatch({ type: "COUNTRY", id: item.id });
+              sound("start");
+            }}
+          />
+        </section>
+      </Shell>
+    );
   const remaining = Math.max(0, 100 - Math.floor(hud.elapsed));
   return (
     <Shell phase="DELIVERY · SCHOOL RUN" step={4}>
@@ -38,9 +112,16 @@ export default function Delivery() {
         <div className="scene-card road-scene-card">
           <div className="scene-topline">
             <span>
-              <i className="live-dot" /> MERDEKA DISTRICT
+              <i className="live-dot" /> {country.flag}{" "}
+              {country.city.toUpperCase()}
             </span>
-            <button onClick={() => setPaused((v) => !v)}>
+            <button
+              onClick={() => {
+                sound("select");
+                setPaused((v) => !v);
+                dispatch({ type: "DRIVE", drive: simulation.current });
+              }}
+            >
               {paused ? "Resume" : "Pause"} {paused ? "▶" : "Ⅱ"}
             </button>
           </div>
@@ -49,7 +130,7 @@ export default function Delivery() {
               simulation={simulation}
               keys={keys}
               paused={paused}
-              onUpdate={setHud}
+              onUpdate={update}
             />
           </Stage>
           <div className="race-overlay">
@@ -87,6 +168,8 @@ export default function Delivery() {
                     simulation.current.elapsed += 5;
                     setHud({ ...simulation.current });
                   }
+                  sound("start");
+                  dispatch({ type: "DRIVE", drive: simulation.current });
                   setPaused(false);
                 }}
               >
@@ -114,7 +197,10 @@ export default function Delivery() {
         </div>
         <aside className="task-card modern-task">
           <span className="eyebrow">NEXT STOP</span>
-          <h2>SD Merdeka.</h2>
+          <h2>{country.school}</h2>
+          <p>
+            {country.flag} {country.city}, {country.name}
+          </p>
           <p>
             One hundred lunches, one school waiting. Steer around traffic and
             use your boost on the open stretches.

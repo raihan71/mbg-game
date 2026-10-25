@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
-    "build": "react-router build",
+    "build": "react-router build && node scripts/build-offline.mjs",
     "start": "react-router-serve ./build/server/index.js",
     "preview": "react-router-serve ./build/server/index.js",
-    "format": "prettier --write app vite.config.js react-router.config.js"
+    "format": "prettier --write app vite.config.js react-router.config.js",
+    "test": "node --test app/lib/*.test.js"
   },
   "dependencies": {
     "@fontsource/nunito": "^5.3.0",
