@@ -1,9 +1,10 @@
-import { CircleHelp, Volume2, VolumeX, X } from "lucide-react";
+import { CircleHelp, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
+import SoundSettings from "./sound-settings";
 import { useGame } from "./game-provider";
 export default function Shell({ children, phase, step }) {
-  const { game, muted, toggleSound, saveStatus, offline } = useGame();
+  const { game, saveStatus, offline } = useGame();
   const [help, setHelp] = useState(false);
   return (
     <main className="app-shell">
@@ -18,18 +19,7 @@ export default function Shell({ children, phase, step }) {
           <span className="day-pill">
             DAY {String(game.day || 1).padStart(2, "0")}
           </span>
-          <button
-            className="help-button"
-            onClick={toggleSound}
-            aria-pressed={!muted}
-          >
-            {muted ? (
-              <VolumeX aria-hidden="true" />
-            ) : (
-              <Volume2 aria-hidden="true" />
-            )}
-            {muted ? "Sound off" : "Sound on"}
-          </button>
+          <SoundSettings />
           <button
             className="help-button"
             onClick={() => setHelp((v) => !v)}

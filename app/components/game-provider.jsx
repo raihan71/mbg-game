@@ -7,7 +7,12 @@ import {
   runPath,
   SAVE_KEY,
 } from "../lib/game";
-import { loadSounds, muteAudio, unlockAudio } from "../lib/audio";
+import {
+  loadSounds,
+  muteAudio,
+  setAudioVolume,
+  unlockAudio,
+} from "../lib/audio";
 const GameContext = createContext(null);
 export const useGame = () => useContext(GameContext);
 export default function GameProvider({ children }) {
@@ -17,6 +22,7 @@ export default function GameProvider({ children }) {
   const [saveStatus, setSaveStatus] = useState("Loading progress…");
   const [offline, setOffline] = useState("Preparing offline play…");
   const [muted, setMuted] = useState(false);
+  const [volume, setVolume] = useState(55);
   const location = useLocation();
   useEffect(() => {
     try {
@@ -34,6 +40,15 @@ export default function GameProvider({ children }) {
       const silent = localStorage.getItem("mbg-muted") === "true";
       setMuted(silent);
       muteAudio(silent);
+      const savedVolume = localStorage.getItem("mbg-volume");
+      if (savedVolume !== null && savedVolume.trim() !== "") {
+        const parsed = Number(savedVolume);
+        if (Number.isFinite(parsed)) {
+          const level = Math.min(100, Math.max(0, parsed));
+          setVolume(level);
+          setAudioVolume(level / 100);
+        }
+      }
       setSaveStatus(
         raw && !saved
           ? "Old save could not be loaded. Start a new adventure."
@@ -115,13 +130,36 @@ export default function GameProvider({ children }) {
       localStorage.setItem("mbg-muted", String(next));
     } catch {}
   }
+  function changeVolume(value) {
+    if (!Number.isFinite(value)) return;
+    const level = Math.min(100, Math.max(0, value));
+    setVolume(level);
+    setAudioVolume(level / 100);
+    setMuted(false);
+    muteAudio(false);
+    unlockAudio();
+    try {
+      localStorage.setItem("mbg-volume", String(level));
+      localStorage.setItem("mbg-muted", "false");
+    } catch {}
+  }
   const guarded = ["/kitchen", "/packing", "/delivery", "/results"].includes(
     location.pathname,
   );
   const wrongPhase = guarded && location.pathname !== runPath(game.run);
   return (
     <GameContext.Provider
-      value={{ game, dispatch, ready, saveStatus, offline, muted, toggleSound }}
+      value={{
+        game,
+        dispatch,
+        ready,
+        saveStatus,
+        offline,
+        muted,
+        toggleSound,
+        volume,
+        changeVolume,
+      }}
     >
       {guarded && !ready ? (
         <main className="app-shell">

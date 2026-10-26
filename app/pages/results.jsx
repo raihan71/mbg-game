@@ -32,7 +32,18 @@ export default function Results() {
 
   return (
     <Shell phase="DELIVERY COMPLETE" step={5}>
-      <DotLottieReact src="/motions/particle-export.lottie" loop autoplay />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 3,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+        aria-hidden="true">
+        <DotLottieReact src="/motions/particle-export.lottie" loop autoplay />
+      </div>
       <section className="results-hero">
         <span className="eyebrow">
           DAY {game.day} COMPLETE · {country.flag} {country.school}

@@ -50,13 +50,14 @@ let context;
 let master;
 let noiseBuffer;
 let muted = false;
+let volume = 0.55;
 const active = new Set();
 const lastPlayed = new Map();
 
 export function muteAudio(value) {
   muted = value;
   if (master)
-    master.gain.setTargetAtTime(value ? 0 : 0.55, context.currentTime, 0.015);
+    master.gain.setTargetAtTime(value ? 0 : volume, context.currentTime, 0.015);
   if (value) {
     for (const source of active) {
       try {
@@ -67,6 +68,13 @@ export function muteAudio(value) {
   }
 }
 
+export function setAudioVolume(value) {
+  if (!Number.isFinite(value)) return;
+  volume = Math.min(1, Math.max(0, value));
+  if (master)
+    master.gain.setTargetAtTime(muted ? 0 : volume, context.currentTime, 0.015);
+}
+
 export function unlockAudio() {
   void loadSounds();
   try {
@@ -74,7 +82,7 @@ export function unlockAudio() {
     if (!context) {
       context = new Audio();
       master = context.createGain();
-      master.gain.value = muted ? 0 : 0.55;
+      master.gain.value = muted ? 0 : volume;
       const limiter = context.createDynamicsCompressor();
       limiter.threshold.value = -18;
       limiter.ratio.value = 4;

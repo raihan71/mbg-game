@@ -13,17 +13,12 @@ export async function assetResponse(request, kind, id) {
     type = "application/json";
   } else if (
     (kind === "images" && Object.hasOwn(imagePaths, id)) ||
-    (kind === "audio" && Object.hasOwn(soundFiles, id)) ||
-    (kind === "motions" && id === "delivery")
+    (kind === "audio" && Object.hasOwn(soundFiles, id))
   ) {
     const root = import.meta.env?.DEV ? "public" : "build/client";
     try {
       const path =
-        kind === "images"
-          ? imagePaths[id]
-          : kind === "motions"
-            ? "/motions/particle-export.json"
-            : `/sounds/${soundFiles[id]}`;
+        kind === "images" ? imagePaths[id] : `/sounds/${soundFiles[id]}`;
       body = await readFile(resolve(root, `.${path}`));
     } catch {
       return new Response("Asset unavailable", { status: 404 });
@@ -31,11 +26,9 @@ export async function assetResponse(request, kind, id) {
     type =
       kind === "images"
         ? "image/png"
-        : kind === "motions"
-          ? "application/json"
-          : soundFiles[id].endsWith(".mp3")
-            ? "audio/mpeg"
-            : "audio/wav";
+        : soundFiles[id].endsWith(".mp3")
+          ? "audio/mpeg"
+          : "audio/wav";
   } else {
     return new Response("Asset not found", { status: 404 });
   }

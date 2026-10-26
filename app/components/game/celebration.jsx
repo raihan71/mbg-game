@@ -1,30 +1,26 @@
-import DeliveryParticles from "./delivery-particles";
-
 export default function Celebration({ color, school }) {
   return (
     <div
       className="celebration"
       role="img"
-      aria-label={`Children in school uniforms cheering hooray at ${school}`}
-    >
-      <DeliveryParticles />
+      aria-label={`Children in school uniforms cheering hooray at ${school}`}>
       <div className="confetti" aria-hidden="true">
         {Array.from({ length: 24 }, (_, i) => (
           <i
             key={i}
             style={{
-              "--i": i,
+              '--i': i,
               left: `${(i * 43) % 100}%`,
-              background: ["#f47f6c", "#f0c65d", "#75af9b", "#91ace1"][i % 4],
+              background: ['#f47f6c', '#f0c65d', '#75af9b', '#91ace1'][i % 4],
             }}
           />
         ))}
       </div>
       <div className="hooray">Hooray! Lunch is here!</div>
       <div className="school-kids" aria-hidden="true">
-        {["#b87850", "#e5ad83", "#915b3f", "#d79c70", "#c88f67"].map(
+        {['#b87850', '#e5ad83', '#915b3f', '#d79c70', '#c88f67'].map(
           (skin, i) => (
-            <svg key={skin} viewBox="0 0 110 160" style={{ "--i": i }}>
+            <svg key={skin} viewBox="0 0 110 160" style={{ '--i': i }}>
               <ellipse
                 cx="55"
                 cy="152"
@@ -47,7 +43,7 @@ export default function Celebration({ color, school }) {
               />
               <path
                 d={
-                  i % 2 ? "M32 93h46l8 31H24z" : "M33 94h44v28H58v-13h-6v13H33z"
+                  i % 2 ? 'M32 93h46l8 31H24z' : 'M33 94h44v28H58v-13h-6v13H33z'
                 }
                 fill={color}
               />
