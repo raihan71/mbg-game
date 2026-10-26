@@ -1,3 +1,12 @@
+import {
+  ArrowRight,
+  Pause,
+  Play,
+  ArrowLeft,
+  ArrowUp,
+  ArrowDown,
+  Zap,
+} from "lucide-react";
 import { lazy, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import Shell from "../components/shell";
@@ -8,7 +17,7 @@ import { useGameInput, holdKey } from "../components/game/input";
 import { useGame } from "../components/game-provider";
 import Roulette from "../components/game/roulette";
 import { countries, countryFor } from "../lib/game";
-import { sound } from "../lib/audio";
+import { sound, stopSound } from "../lib/audio";
 import { createDrive } from "../lib/driving";
 export default function Delivery() {
   const go = useNavigate();
@@ -47,7 +56,7 @@ export default function Delivery() {
     setHud(next);
     if (next.hits > lastCue.current.hits) sound("bump");
     if (next.boost && !lastCue.current.boost) sound("boost");
-    if (next.event && !lastCue.current.event) sound("error");
+    if (next.event && !lastCue.current.event) sound("horn");
     lastCue.current = { hits: next.hits, boost: next.boost, event: next.event };
     if (next.done || next.elapsed - lastSave.current >= 1) {
       lastSave.current = next.elapsed;
@@ -60,9 +69,13 @@ export default function Delivery() {
   }
   useEffect(() => {
     if (!country || paused || hud.speed < 1 || hud.event || hud.done) return;
+    sound("engine");
     const timer = setInterval(() => sound("engine"), 450);
-    return () => clearInterval(timer);
-  }, [country, paused, hud.speed > 0, hud.event, hud.done]);
+    return () => {
+      clearInterval(timer);
+      stopSound("engine");
+    };
+  }, [country, paused, hud.speed >= 1, hud.event, hud.done]);
   if (!country)
     return (
       <Shell phase="DESTINATION ROULETTE" step={4}>
@@ -122,7 +135,12 @@ export default function Delivery() {
                 dispatch({ type: "DRIVE", drive: simulation.current });
               }}
             >
-              {paused ? "Resume" : "Pause"} {paused ? "▶" : "Ⅱ"}
+              {paused ? "Resume" : "Pause"}{" "}
+              {paused ? (
+                <Play aria-hidden="true" />
+              ) : (
+                <Pause aria-hidden="true" />
+              )}
             </button>
           </div>
           <Stage label="Top-down driving game. Avoid traffic while delivering meals to school.">
@@ -173,20 +191,21 @@ export default function Delivery() {
                   setPaused(false);
                 }}
               >
-                {hud.event ? "Take detour · +5 sec" : "Back to the road"} →
+                {hud.event ? "Take detour · +5 sec" : "Back to the road"}{" "}
+                <ArrowRight aria-hidden="true" />
               </Button>
             </div>
           )}
           <div className="driving-buttons">
             {[
-              ["a", "←", "Steer left"],
-              ["w", "↑", "Accelerate"],
-              ["s", "↓", "Brake"],
-              ["d", "→", "Steer right"],
-              [" ", "BOOST", "Boost"],
-            ].map(([key, label, title]) => (
+              ["a", "left", ArrowLeft, "Steer left"],
+              ["w", "up", ArrowUp, "Accelerate"],
+              ["s", "down", ArrowDown, "Brake"],
+              ["d", "right", ArrowRight, "Steer right"],
+              [" ", "boost", Zap, "Boost"],
+            ].map(([key, label, Icon, title]) => (
               <button key={key} aria-label={title} {...holdKey(keys, key)}>
-                {label}
+                <Icon aria-hidden="true" />
                 <small>{title}</small>
               </button>
             ))}

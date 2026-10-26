@@ -1,3 +1,4 @@
+import { RotateCw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Button from "../../elements/button";
 import ModelImage from "../model-image";
@@ -53,7 +54,10 @@ export default function Roulette({ items, title, onPick }) {
         ))}
       </div>
       <Button disabled={spinning} onClick={spin}>
-        {spinning ? "Spinning…" : "Spin the roulette"} <span>↻</span>
+        {spinning ? "Spinning…" : "Spin the roulette"}{" "}
+        <span>
+          <RotateCw aria-hidden="true" />
+        </span>
       </Button>
       <p role="status">
         {spinning

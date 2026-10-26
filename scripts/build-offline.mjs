@@ -1,5 +1,8 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { imagePaths, imageUrl } from "../app/configs/asset-paths.js";
+import { soundRecipes } from "../app/lib/sound-recipes.server.js";
+import { soundFiles, soundUrl } from "../app/configs/sound-assets.js";
 const root = new URL("../build/client/", import.meta.url);
 async function walk(directory, prefix = "") {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -16,12 +19,17 @@ async function walk(directory, prefix = "") {
 }
 const files = (await walk(root)).sort();
 const hash = createHash("sha256");
+hash.update(JSON.stringify(soundRecipes));
 for (const file of files) {
   hash.update(file);
   hash.update(await readFile(new URL(file, root)));
 }
 const version = hash.digest("hex").slice(0, 16);
 const urls = [
+  "/api/assets/sounds",
+  "/api/assets/motions/delivery",
+  ...Object.keys(soundFiles).map(soundUrl),
+  ...Object.keys(imagePaths).map(imageUrl),
   "/",
   "/mission",
   "/kitchen",

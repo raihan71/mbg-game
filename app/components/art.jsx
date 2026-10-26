@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react";
 import ModelImage from "./model-image";
 import { images } from "../configs/images";
 export default function Art() {
@@ -23,8 +24,12 @@ export default function Art() {
         className="hero-ingredient ingredient-tomato"
         decorative
       />
-      <span className="illustration-spark spark-one">✦</span>
-      <span className="illustration-spark spark-two">✦</span>
+      <span className="illustration-spark spark-one">
+        <Sparkles aria-hidden="true" />
+      </span>
+      <span className="illustration-spark spark-two">
+        <Sparkles aria-hidden="true" />
+      </span>
     </div>
   );
 }

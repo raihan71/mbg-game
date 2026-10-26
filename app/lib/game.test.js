@@ -82,3 +82,24 @@ test("invalid saves are rejected without throwing", () => {
   s.run.phase = "results";
   assert.equal(parseGame(JSON.stringify(s)), null);
 });
+test("cancel clears active progress, persists, and restarts the same day", () => {
+  let s = cooked();
+  s = { ...s, day: 3, best: 9600 };
+  for (const phase of ["kitchen", "packing", "delivery"]) {
+    const cancelled = reduce(
+      { ...s, run: { ...s.run, phase } },
+      { type: "CANCEL" },
+    );
+    assert.equal(cancelled.run, null);
+    assert.equal(runPath(cancelled.run), "/mission");
+    assert.equal(cancelled.best, 9600);
+    assert.deepEqual(parseGame(JSON.stringify(cancelled)), cancelled);
+    assert.equal(reduce(cancelled, { type: "CANCEL" }), cancelled);
+    const restarted = reduce(cancelled, { type: "NEW", menuId: "eggs" });
+    assert.equal(restarted.day, 3);
+    assert.equal(restarted.run.stage, 0);
+    assert.deepEqual(restarted.run.selected, []);
+  }
+  const completed = { ...s, run: { ...s.run, phase: "results" } };
+  assert.equal(reduce(completed, { type: "CANCEL" }), completed);
+});

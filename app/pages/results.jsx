@@ -1,11 +1,14 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router";
-import Shell from "../components/shell";
-import Button from "../elements/button";
-import Celebration from "../components/game/celebration";
-import { useGame } from "../components/game-provider";
-import { menuFor, countryFor } from "../lib/game";
-import { sound } from "../lib/audio";
+import { House, RotateCw } from 'lucide-react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import Shell from '../components/shell';
+import Button from '../elements/button';
+import Celebration from '../components/game/celebration';
+import { useGame } from '../components/game-provider';
+import { menuFor, countryFor } from '../lib/game';
+import { sound, stopSound } from '../lib/audio';
+
 export default function Results() {
   const go = useNavigate();
   const { game } = useGame();
@@ -14,10 +17,22 @@ export default function Results() {
   const country = countryFor(run);
   const late = run.drive.elapsed > 100;
   useEffect(() => {
-    sound("success");
+    let timer;
+    let attempts = 0;
+    const cheer = () => {
+      if (sound('cheer') || ++attempts >= 25) clearInterval(timer);
+    };
+    timer = setInterval(cheer, 200);
+    cheer();
+    return () => {
+      clearInterval(timer);
+      stopSound('cheer');
+    };
   }, []);
+
   return (
     <Shell phase="DELIVERY COMPLETE" step={5}>
+      <DotLottieReact src="/motions/particle-export.lottie" loop autoplay />
       <section className="results-hero">
         <span className="eyebrow">
           DAY {game.day} COMPLETE · {country.flag} {country.school}
@@ -27,18 +42,18 @@ export default function Results() {
           Lunch has <em>landed.</em>
         </h1>
         <p>
-          {menu.name}, with every extra in its place. Happy students in{" "}
+          {menu.name}, with every extra in its place. Happy students in{' '}
           {country.city} are cheering for their chef!
         </p>
         <div className="result-score">
           <span>TODAY’S SCORE</span>
-          <strong>{run.score.toLocaleString("en-US")}</strong>
+          <strong>{run.score.toLocaleString('en-US')}</strong>
           <span className="rank-pill">
-            {run.score >= 9000
-              ? "A · LUNCH HERO"
-              : run.score >= 7000
-                ? "B · GREAT DELIVERY"
-                : "C · KEEP PRACTICING"}
+            {run.score >= 9000 ?
+              'A · LUNCH HERO'
+            : run.score >= 7000 ?
+              'B · GREAT DELIVERY'
+            : 'C · KEEP PRACTICING'}
           </span>
         </div>
       </section>
@@ -46,14 +61,14 @@ export default function Results() {
         <div className="score-card">
           <span className="eyebrow">YOUR ADVENTURE</span>
           {[
-            ["Menu", menu.name],
-            ["Destination", country.name],
-            ["Recipe & packing mistakes", run.mistakes],
-            ["Traffic bumps", run.drive.hits],
-            ["Delivery time", `${Math.floor(run.drive.elapsed)} seconds`],
+            ['Menu', menu.name],
+            ['Destination', country.name],
+            ['Recipe & packing mistakes', run.mistakes],
+            ['Traffic bumps', run.drive.hits],
+            ['Delivery time', `${Math.floor(run.drive.elapsed)} seconds`],
             [
-              "Arrival",
-              late ? "A little late, still a happy lunch" : "Right on time",
+              'Arrival',
+              late ? 'A little late, still a happy lunch' : 'Right on time',
             ],
           ].map(([label, value]) => (
             <div className="score-row" key={label}>
@@ -81,12 +96,14 @@ export default function Results() {
         </div>
       </section>
       <div className="results-actions">
-        <Button onClick={() => go("/mission")}>Spin tomorrow’s menu ↻</Button>
-        <Button variant="quiet" onClick={() => go("/")}>
-          Back to base ⌂
+        <Button onClick={() => go('/mission')}>
+          Spin tomorrow’s menu <RotateCw aria-hidden="true" />
+        </Button>
+        <Button variant="quiet" onClick={() => go('/')}>
+          Back to base <House aria-hidden="true" />
         </Button>
         <span className="best-note">
-          PERSONAL BEST <b>{game.best.toLocaleString("en-US")}</b>
+          PERSONAL BEST <b>{game.best.toLocaleString('en-US')}</b>
         </span>
       </div>
     </Shell>

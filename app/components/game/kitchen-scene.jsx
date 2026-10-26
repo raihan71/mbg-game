@@ -5,6 +5,7 @@ import { brand } from "../../configs/brand";
 import Sprite from "./sprite";
 import { images } from "../../configs/images";
 import { stations } from "../../lib/kitchen";
+import { sound } from "../../lib/audio";
 export default function KitchenScene({
   ingredientAsset = images.chicken,
   dishAsset = images.mealTray,
@@ -25,6 +26,8 @@ export default function KitchenScene({
   const arrived = useRef(false);
   const completed = useRef(false);
   const report = useRef(0);
+  const stride = useRef(0);
+  const walking = useRef(false);
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
     if (lastCommand.current !== command) {
@@ -35,6 +38,8 @@ export default function KitchenScene({
       progress.current.scale.x = 0.001;
     }
     const p = chef.current.position;
+    const previousX = p.x;
+    const previousY = p.y;
     const k = keys.current;
     motion.current =
       busy ||
@@ -86,6 +91,18 @@ export default function KitchenScene({
       const length = Math.hypot(dx, dy) || 1;
       p.x = Math.max(-6.8, Math.min(6.8, p.x + (dx / length) * dt * 5));
       p.y = Math.max(-3.5, Math.min(0.75, p.y + (dy / length) * dt * 5));
+    }
+    const distanceMoved = Math.hypot(p.x - previousX, p.y - previousY);
+    if (distanceMoved > 0.0001) {
+      stride.current += distanceMoved;
+      if (!walking.current || stride.current >= 1.4) {
+        sound("footstep");
+        stride.current = 0;
+      }
+      walking.current = true;
+    } else {
+      walking.current = false;
+      stride.current = 0;
     }
   });
   return (

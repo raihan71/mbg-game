@@ -1,21 +1,21 @@
+import { imageUrl } from "./asset-paths.js";
 import { brand } from "./brand.js";
 
-// Public files are served from the site root, not from /public.
-// Keep asset URLs and sprite-sheet regions here for both DOM and WebGL users.
+// DOM and WebGL share server asset URLs and sprite-sheet regions.
 export const models = Object.freeze({
-  chef: "/models/chef.png",
-  characterSheet: "/models/character-sheet.png",
-  kitchen: "/models/kitchen.png",
-  kitchenScene: "/models/kitchen-scene.png",
-  deliveryRacer: "/models/delivery-racer.png",
-  van: "/models/van.png",
-  chicken: "/models/chicken.png",
-  egg: "/models/egg.png",
-  fruits: "/models/fruits.png",
-  milk: "/models/milk.png",
-  onion: "/models/onion.png",
-  tomato: "/models/tomato.png",
-  vegetable: "/models/vegetable.png",
+  chef: imageUrl("0"),
+  characterSheet: imageUrl("1"),
+  kitchen: imageUrl("2"),
+  kitchenScene: imageUrl("3"),
+  deliveryRacer: imageUrl("4"),
+  van: imageUrl("5"),
+  chicken: imageUrl("6"),
+  egg: imageUrl("7"),
+  fruits: imageUrl("8"),
+  milk: imageUrl("9"),
+  onion: imageUrl("10"),
+  tomato: imageUrl("11"),
+  vegetable: imageUrl("12"),
 });
 
 const chefRegion = (x, y, width, height, alt) => ({
@@ -132,31 +132,29 @@ export const icons = Object.freeze({
 
 // Traffic artwork supplied in public/models/vehicle_sprites_cropped.
 export const vehicleModels = Object.freeze({
-  mbg_van: "/models/vehicle_sprites_cropped/01_mbg_van.png",
-  school_bus: "/models/vehicle_sprites_cropped/02_school_bus.png",
-  red_car: "/models/vehicle_sprites_cropped/03_red_car.png",
-  white_sedan: "/models/vehicle_sprites_cropped/04_white_sedan.png",
-  black_pickup: "/models/vehicle_sprites_cropped/05_black_pickup.png",
-  orange_truck: "/models/vehicle_sprites_cropped/06_orange_truck.png",
-  white_delivery_van:
-    "/models/vehicle_sprites_cropped/07_white_delivery_van.png",
-  green_car: "/models/vehicle_sprites_cropped/08_green_car.png",
-  blue_car: "/models/vehicle_sprites_cropped/09_blue_car.png",
-  yellow_taxi: "/models/vehicle_sprites_cropped/10_yellow_taxi.png",
-  ambulance: "/models/vehicle_sprites_cropped/11_ambulance.png",
-  police_car: "/models/vehicle_sprites_cropped/12_police_car.png",
-  garbage_truck: "/models/vehicle_sprites_cropped/13_garbage_truck.png",
-  fire_truck: "/models/vehicle_sprites_cropped/14_fire_truck.png",
-  red_motorcycle: "/models/vehicle_sprites_cropped/15_red_motorcycle.png",
-  blue_motorcycle: "/models/vehicle_sprites_cropped/16_blue_motorcycle.png",
-  black_motorcycle: "/models/vehicle_sprites_cropped/17_black_motorcycle.png",
-  green_motorcycle: "/models/vehicle_sprites_cropped/18_green_motorcycle.png",
-  small_white_cargo_truck:
-    "/models/vehicle_sprites_cropped/19_small_white_cargo_truck.png",
-  blue_cargo_truck: "/models/vehicle_sprites_cropped/20_blue_cargo_truck.png",
-  tanker_truck: "/models/vehicle_sprites_cropped/21_tanker_truck.png",
-  dump_truck: "/models/vehicle_sprites_cropped/22_dump_truck.png",
-  white_box_truck: "/models/vehicle_sprites_cropped/23_white_box_truck.png",
+  mbg_van: imageUrl("13"),
+  school_bus: imageUrl("14"),
+  red_car: imageUrl("15"),
+  white_sedan: imageUrl("16"),
+  black_pickup: imageUrl("17"),
+  orange_truck: imageUrl("18"),
+  white_delivery_van: imageUrl("19"),
+  green_car: imageUrl("20"),
+  blue_car: imageUrl("21"),
+  yellow_taxi: imageUrl("22"),
+  ambulance: imageUrl("23"),
+  police_car: imageUrl("24"),
+  garbage_truck: imageUrl("25"),
+  fire_truck: imageUrl("26"),
+  red_motorcycle: imageUrl("27"),
+  blue_motorcycle: imageUrl("28"),
+  black_motorcycle: imageUrl("29"),
+  green_motorcycle: imageUrl("30"),
+  small_white_cargo_truck: imageUrl("31"),
+  blue_cargo_truck: imageUrl("32"),
+  tanker_truck: imageUrl("33"),
+  dump_truck: imageUrl("34"),
+  white_box_truck: imageUrl("35"),
 });
 
 // Source crops retain background pixels. Silhouette geometry draws only each

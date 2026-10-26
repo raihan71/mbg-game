@@ -1,3 +1,4 @@
+import { ArrowLeft, ArrowRight, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router";
 import Shell from "../components/shell";
 import Button from "../elements/button";
@@ -30,12 +31,12 @@ export default function Mission() {
                 {menuFor(game.run).name} · Day {game.day} · {game.run.phase}
               </p>
               <Button onClick={() => go(runPath(game.run))}>
-                Resume adventure →
+                Resume adventure <ArrowRight aria-hidden="true" />
               </Button>
             </div>
           )}
           <button className="back-link" onClick={() => go("/")}>
-            ← back to base
+            <ArrowLeft aria-hidden="true" /> back to base
           </button>
         </div>
         {ready &&
@@ -44,10 +45,17 @@ export default function Mission() {
               <h2>Finish today’s adventure.</h2>
               <p>
                 Your menu and packing instructions are saved. Complete this
-                delivery to unlock the next roulette.
+                delivery or cancel it to spin again from the beginning.
               </p>
               <Button onClick={() => go(runPath(game.run))}>
-                Continue {game.run.phase} →
+                Continue {game.run.phase} <ArrowRight aria-hidden="true" />
+              </Button>
+              <Button
+                variant="soft"
+                className="mission-cancel"
+                onClick={() => dispatch({ type: "CANCEL" })}
+              >
+                <RotateCcw aria-hidden="true" /> Cancel & start over
               </Button>
             </div>
           ) : (

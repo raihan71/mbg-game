@@ -7,7 +7,7 @@ import {
   runPath,
   SAVE_KEY,
 } from "../lib/game";
-import { muteAudio, unlockAudio } from "../lib/audio";
+import { loadSounds, muteAudio, unlockAudio } from "../lib/audio";
 const GameContext = createContext(null);
 export const useGame = () => useContext(GameContext);
 export default function GameProvider({ children }) {
@@ -42,6 +42,7 @@ export default function GameProvider({ children }) {
     } catch {
       setSaveStatus("Storage unavailable · progress lasts for this visit");
     }
+    void loadSounds();
     setReady(true);
     const unlock = () => unlockAudio();
     window.addEventListener("pointerdown", unlock);

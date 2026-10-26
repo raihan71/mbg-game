@@ -1,7 +1,8 @@
 export default {
-  appDirectory: "app",
+  appDirectory: 'app',
+  prender: ['/', '/mission', '/kitchen', '/packing', '/delivery', '/results'],
   ssr: true,
   routeDiscovery: {
-    mode: "initial",
+    mode: 'lazy',
   },
 };

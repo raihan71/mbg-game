@@ -1,3 +1,4 @@
+import { ArrowRight, Check, Plus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import Shell from "../components/shell";
@@ -90,7 +91,11 @@ export default function Packing() {
                 <ModelImage asset={catalog[id].image} decorative />
                 <span>
                   {id === "dish" ? `Cooked ${menu.name}` : catalog[id].name}{" "}
-                  {run.packed.includes(id) ? "✓" : "+"}
+                  {run.packed.includes(id) ? (
+                    <Check aria-hidden="true" />
+                  ) : (
+                    <Plus aria-hidden="true" />
+                  )}
                 </span>
               </button>
             ))}
@@ -111,7 +116,7 @@ export default function Packing() {
                   i < count ? "finished" : i === count ? "current" : ""
                 }
               >
-                <span>{i < count ? "✓" : i + 1}</span>
+                <span>{i < count ? <Check aria-hidden="true" /> : i + 1}</span>
                 <b>{catalog[id].name}</b>
                 <small>
                   {i === count ? "NEXT" : i < count ? "PACKED" : ""}
@@ -130,7 +135,7 @@ export default function Packing() {
               go("/delivery");
             }}
           >
-            Seal the box & choose destination →
+            Seal the box & choose destination <ArrowRight aria-hidden="true" />
           </Button>
         </aside>
       </section>

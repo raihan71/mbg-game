@@ -634,6 +634,9 @@ p {
   font-size: 15px;
   line-height: 1.6;
 }
+.mission-cancel {
+  margin-top: 12px;
+}
 .task-head,
 .task-foot {
   display: flex;
@@ -1760,4 +1763,47 @@ p {
   margin: 20px 24px 0;
   font-weight: 800;
   color: #4a7155;
+}
+
+/* Shared Lucide sizing keeps text and touch controls aligned. */
+.lucide {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  flex-shrink: 0;
+  vertical-align: -0.18em;
+  stroke-width: 2;
+}
+.help-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.illustration-spark .lucide {
+  width: 1em;
+  height: 1em;
+}
+.driving-buttons .lucide,
+.mini-pad .lucide {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.delivery-fireworks {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  overflow: hidden;
+}
+.delivery-fireworks canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .delivery-fireworks {
+    display: none;
+  }
 }

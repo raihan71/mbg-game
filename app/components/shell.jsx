@@ -1,3 +1,4 @@
+import { CircleHelp, Volume2, VolumeX, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { useGame } from "./game-provider";
@@ -22,6 +23,11 @@ export default function Shell({ children, phase, step }) {
             onClick={toggleSound}
             aria-pressed={!muted}
           >
+            {muted ? (
+              <VolumeX aria-hidden="true" />
+            ) : (
+              <Volume2 aria-hidden="true" />
+            )}
             {muted ? "Sound off" : "Sound on"}
           </button>
           <button
@@ -30,7 +36,7 @@ export default function Shell({ children, phase, step }) {
             aria-expanded={help}
             aria-controls="field-guide"
           >
-            How to play <span>?</span>
+            How to play <CircleHelp aria-hidden="true" />
           </button>
         </div>
       </header>
@@ -41,7 +47,7 @@ export default function Shell({ children, phase, step }) {
             aria-label="Close help"
             onClick={() => setHelp(false)}
           >
-            ×
+            <X aria-hidden="true" />
           </button>
           <span className="eyebrow">YOUR LITTLE FIELD GUIDE</span>
           <h2>You’ve got this, chef.</h2>

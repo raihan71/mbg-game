@@ -85,6 +85,10 @@ export function runPath(run) {
 }
 export function gameReducer(state, action) {
   const run = state.run;
+  if (action.type === "CANCEL") {
+    if (!run || run.phase === "results") return state;
+    return { ...state, day: Math.max(0, state.day - 1), run: null };
+  }
   if (action.type === "NEW") {
     if (
       (run && run.phase !== "results") ||

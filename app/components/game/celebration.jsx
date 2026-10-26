@@ -1,3 +1,5 @@
+import DeliveryParticles from "./delivery-particles";
+
 export default function Celebration({ color, school }) {
   return (
     <div
@@ -5,6 +7,7 @@ export default function Celebration({ color, school }) {
       role="img"
       aria-label={`Children in school uniforms cheering hooray at ${school}`}
     >
+      <DeliveryParticles />
       <div className="confetti" aria-hidden="true">
         {Array.from({ length: 24 }, (_, i) => (
           <i

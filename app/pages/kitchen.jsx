@@ -1,3 +1,12 @@
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  Plus,
+  ArrowLeft,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { lazy, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import Shell from "../components/shell";
@@ -5,7 +14,7 @@ import Button from "../elements/button";
 import Stage from "../components/game/stage";
 import { useGame } from "../components/game-provider";
 import { foods, menuFor } from "../lib/game";
-import { sound } from "../lib/audio";
+import { sound, stopSound } from "../lib/audio";
 import ModelImage from "../components/model-image";
 import { stations } from "../lib/kitchen";
 const KitchenScene = lazy(() => import("../components/game/kitchen-scene"));
@@ -30,9 +39,14 @@ export default function Kitchen() {
   useEffect(() => {
     if (!busy || stage === 0 || progress <= 0) return;
     const cue = stage === 1 ? "chop" : stage === 2 ? "cook" : "pack";
+    if (stage === 2) sound("pots");
     sound(cue);
     const timer = setInterval(() => sound(cue), stage === 2 ? 430 : 350);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      stopSound(cue);
+      stopSound("pots");
+    };
   }, [busy, stage, progress > 0]);
   function visit(index) {
     if (lock.current || index !== stage || stage === 4) return;
@@ -134,7 +148,15 @@ export default function Kitchen() {
               >
                 <small>0{i + 1}</small>
                 {s.label}
-                <b>{stage > i ? "✓" : stage === i ? "↗" : "·"}</b>
+                <b>
+                  {stage > i ? (
+                    <Check aria-hidden="true" />
+                  ) : stage === i ? (
+                    <ArrowUpRight aria-hidden="true" />
+                  ) : (
+                    "·"
+                  )}
+                </b>
               </button>
             ))}
           </div>
@@ -142,17 +164,17 @@ export default function Kitchen() {
             <span>WASD / ARROWS TO WALK · SELECT A STATION TO WORK</span>
             <div className="mini-pad">
               {[
-                ["a", "←"],
-                ["w", "↑"],
-                ["s", "↓"],
-                ["d", "→"],
-              ].map(([key, label]) => (
+                ["a", "left", ArrowLeft],
+                ["w", "up", ArrowUp],
+                ["s", "down", ArrowDown],
+                ["d", "right", ArrowRight],
+              ].map(([key, label, Icon]) => (
                 <button
                   aria-label={`Move ${label}`}
                   key={key}
                   {...holdKey(keys, key)}
                 >
-                  {label}
+                  <Icon aria-hidden="true" />
                 </button>
               ))}
             </div>
@@ -180,7 +202,9 @@ export default function Kitchen() {
               "Plate the meals",
             ].map((text, i) => (
               <div key={text} className={stage > i ? "finished" : ""}>
-                <span>{stage > i ? "✓" : `0${i + 1}`}</span>
+                <span>
+                  {stage > i ? <Check aria-hidden="true" /> : `0${i + 1}`}
+                </span>
                 {text}
                 <b>{stage === i ? "NOW" : ""}</b>
               </div>
@@ -202,7 +226,12 @@ export default function Kitchen() {
                   >
                     <ModelImage asset={food.image} decorative />
                     <span>
-                      {food.name} {run.selected.includes(id) ? "✓" : "+"}
+                      {food.name}{" "}
+                      {run.selected.includes(id) ? (
+                        <Check aria-hidden="true" />
+                      ) : (
+                        <Plus aria-hidden="true" />
+                      )}
                     </span>
                   </button>
                 ))}
@@ -213,7 +242,7 @@ export default function Kitchen() {
                 onClick={inspect}
               >
                 Ingredients ready · {run.selected.length}/
-                {menu.ingredients.length} →
+                {menu.ingredients.length} <ArrowRight aria-hidden="true" />
               </Button>
             </div>
           ) : stage < 4 ? (
@@ -228,7 +257,9 @@ export default function Kitchen() {
                   ? `Working · ${Math.round(progress * 100)}%`
                   : "Walking to station…"
                 : `Go to ${stations[stage].label.toLowerCase()}`}{" "}
-              <span>↗</span>
+              <span>
+                <ArrowUpRight aria-hidden="true" />
+              </span>
             </Button>
           ) : (
             <Button
@@ -239,7 +270,10 @@ export default function Kitchen() {
                 go("/packing");
               }}
             >
-              Start packing <span>↗</span>
+              Start packing{" "}
+              <span>
+                <ArrowUpRight aria-hidden="true" />
+              </span>
             </Button>
           )}
           <p className="game-notice" role="status">

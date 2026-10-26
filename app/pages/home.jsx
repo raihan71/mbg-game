@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import Art from "../components/art";
@@ -32,7 +33,10 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <Button onClick={() => go(active ? runPath(game.run) : "/mission")}>
-              {active ? "Resume adventure" : "Let’s get cooking"} <span>→</span>
+              {active ? "Resume adventure" : "Let’s get cooking"}{" "}
+              <span>
+                <ArrowRight aria-hidden="true" />
+              </span>
             </Button>
             <Button
               variant="quiet"
@@ -42,7 +46,10 @@ export default function Home() {
                   .scrollIntoView({ behavior: "smooth" })
               }
             >
-              How it works <span>↓</span>
+              How it works{" "}
+              <span>
+                <ArrowDown aria-hidden="true" />
+              </span>
             </Button>
           </div>
           <div className="hero-foot">
@@ -77,7 +84,10 @@ export default function Home() {
             together. Every safe choice makes a difference.
           </p>
           <button className="text-link" onClick={() => go("/mission")}>
-            Meet today’s mission <span>→</span>
+            Meet today’s mission{" "}
+            <span>
+              <ArrowRight aria-hidden="true" />
+            </span>
           </button>
         </div>
       </section>
